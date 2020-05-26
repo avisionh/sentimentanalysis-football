@@ -1,0 +1,11 @@
+# environments
+venv/
+
+# ide
+.idea/
+
+# mac display files
+*.DS_Store
+
+# notebook checkpoints
+*.ipynb_checkpoints
