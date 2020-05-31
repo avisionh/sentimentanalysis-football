@@ -36,7 +36,7 @@ data_commentary.info()
 
 # We now reduce the dataset we are interested in so that it's easier to handle throughout. Note that the `event_team` column is defined as the team that produced the event. Thus, the commentary, `text` column, is associated to this column. In the case of an own goal, then the `event_team` will be the team that benefitted from the goal. In which case, we need to consider this carefully because the commentary associated to an own goal would be negative, but the team associated to the commentary is the one that benefits, hence we need to treat these cases differently.
 # 
-# Note, we can identify own goals via the `event_type2` column which will have a value of `15`.
+# Note, we can identify own goals via the `event_type2` column which will have a value of `15`. Thus, we need to switch the entries around for `event_team` and `opponent` for these cases.
 
 # select only necessary columns
 data_commentary = data_commentary.loc[:, ['id_odsp', 'text', 'event_team', 'opponent']]
@@ -57,6 +57,13 @@ data_commentary['text'] = data_commentary['text'].astype(str)
 # - Commentary recorded in the dataset reports on all main events in a game.
 # - Commentary recorded in the dataset will report the good and bad events associated to the home and away sides in each game.
 #     + This means the commentary is an accurate reflection of all the major events in each game.
+#     
+# Things worth considering also:
+# 
+# - Commentary for a game will be positive for one side and negative for the other side.
+#     + This is a loose assumption as the losing team can perform well. In which case, the winning and losing side can both have postive sentiment. This should be okay because good teams that lose are still good teams. (This could be the unexplained 'luck' factor)
+# - A team may get negative sentiment for sitting back, soaking up pressure, hitting the opponent on the counterattack and winning the game.
+#      + In which case, are we judging teams that predominantly counterattack as bad? Is this desirable? A good counter-example would be Leicester City in the 2015-16 EPL season when they played a predominantly counter-attacking game but won the league. Clearly they must have been a good side to win the league, so we would not want to judge them as being a bad team.
 
 aggregate_function = {'text': ' '.join}
 data_reduced = data_commentary.groupby(['id_odsp', 'event_team', 'opponent']).agg(aggregate_function)
