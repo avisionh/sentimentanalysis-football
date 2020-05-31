@@ -9,6 +9,7 @@ venv/
 
 # notebook checkpoints
 *.ipynb_checkpoints
+*.ipynb
 
 # data
 *.csv
