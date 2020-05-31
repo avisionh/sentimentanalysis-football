@@ -34,6 +34,12 @@ data_commentary.info()
 
 # Need to convert object of interest into a `TextBlob` object so we can use things from `TextBlob` package.
 
+# We now reduce the dataset we are interested in so that it's easier to handle throughout. Note that the `event_team` column is defined as the team that produced the event. Thus, the commentary, `text` column, is associated to this column. In the case of an own goal, then the `event_team` will be the team that benefitted from the goal. In which case, we need to consider this carefully because the commentary associated to an own goal would be negative, but the team associated to the commentary is the one that benefits, hence we need to treat these cases differently.
+# 
+# Note, we can identify own goals via the `event_type2` column which will have a value of `15`.
+
+# select only necessary columns
+data_commentary = data_commentary.loc[:, ['id_odsp', 'text', 'event_team', 'opponent']]
 data_commentary['text'] = data_commentary['text'].astype(str)
 
 
@@ -51,6 +57,13 @@ data_commentary['text'] = data_commentary['text'].astype(str)
 # - Commentary recorded in the dataset reports on all main events in a game.
 # - Commentary recorded in the dataset will report the good and bad events associated to the home and away sides in each game.
 #     + This means the commentary is an accurate reflection of all the major events in each game.
+
+aggregate_function = {'text': ' '.join}
+data_reduced = data_commentary.groupby(['id_odsp', 'event_team', 'opponent']).agg(aggregate_function)
+
+
+data_reduced.head(10)
+
 
 # ***
 # 
