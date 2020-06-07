@@ -141,9 +141,9 @@ plt.title('Histogram of polarity scores for football commentary')
 
 
 # ### Subjectivity
-# Plotting a histogram of the subjectvity scores returned by the function, we find that most of the scores are below 0.50. This means that the language function is scoring most of the sentiment as being objective. In other words, looking at all commentary associated with each side in a match, the sentiment is positive. 
+# Plotting a histogram of the subjectvity scores returned by the function, we find that most of the scores are below 0.50. This means that the language function is scoring most of the sentiment as being objective. In other words, looking at all commentary associated with each side in a match, the sentiment is mainly objective. 
 # 
-# This contradicts with our assumption that matches each return a side with positive sentiment and the other side with negative sentiment. 
+# This is aligned with our intuition as commentary should predominantly be fact-based and report on what's observed.
 
 lowerbound = 0
 upperbound = 1
@@ -170,6 +170,16 @@ data_reduce.loc[1,'text']
 
 
 # We can investigate (1.) further by looking at the sentiment attached to each line of commentary then filter out the weak ones in order to reduce the noise this is causing on the overall sentiment.
+
+# ## Summary
+# Therefore, the `.sentiment` method is not working very well because the `polarity` scores are too small and are always positive. We have three options now for the benchmarking:
+# 
+# 1. Take some sort of aggregation of the individual sentiment scores for each line of commentary
+# 1. Tweak the algorithm underlying the `.sentiment` method so it is more sensitive to football-specific language such as goals
+#     + This would entail putting greater weight on certain key words/phrases like *'goal'* or *'red card'*.
+# 1. Use a different module like VADER
+# 
+# It may turn out that none of these options will improve our scores substantially enough for them to be reasonable; in particular, such that one team will have positive sentiment attached to their commentary whilst the opposing team will have a negative sentiment. T
 
 # output as Python script for nice version-controlling
 get_ipython().system('jupyter nbconvert --to script --no-prompt notebook.ipynb')
