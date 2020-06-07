@@ -179,7 +179,54 @@ data_reduce.loc[1,'text']
 #     + This would entail putting greater weight on certain key words/phrases like *'goal'* or *'red card'*.
 # 1. Use a different module like VADER
 # 
-# It may turn out that none of these options will improve our scores substantially enough for them to be reasonable; in particular, such that one team will have positive sentiment attached to their commentary whilst the opposing team will have a negative sentiment. T
+# It may turn out that none of these options will improve our scores substantially enough for them to be reasonable; in particular, such that one team will have positive sentiment attached to their commentary whilst the opposing team will have a negative sentiment. This could just be the very nature of commentary data, it lacks clear enough language/words that signals a clear and strong sentiment. In this case, we may want to explore a similar dataset, but one that has is likely to have more clear sentiment signals in it, namely:
+# 
+# > Football match reports
+
+# ***
+
+# ## Line-by-line analysis
+# In this section, we will compute the sentiment scores for each line of commentary then agggregate it to get a team's overall sentiment score in a match.
+
+data_commentary.head(10)
+
+
+# gather sentiment for each commentary line (related to each action in a match) for each team in each game
+data_commentary['text_polarity'] = data_commentary['text'].apply(lambda text: TextBlob(text).sentiment.polarity)
+data_commentary['text_subjectivity'] = data_commentary['text'].apply(lambda text: TextBlob(text).sentiment.subjectivity)
+
+
+data_commentary.head(10)
+
+
+lowerbound_polarity = -1
+upperbound_polarity = 1
+# want bins every 0.1
+nbins_polarity = (upperbound_polarity - lowerbound_polarity)/0.1
+nbins_polarity = int(nbins_polarity)
+
+lowerbound_subjectivity = 0
+upperbound_subjectivity = 1
+# want bins every 0.1
+nbins_subjectivity = (upperbound_subjectivity - lowerbound_subjectivity)/0.1
+nbins_subjectivity = int(nbins_subjectivity)
+
+gridsize = (1,2)
+fig = plt.figure(figsize = (12, 8))
+
+ax1 = plt.subplot2grid(shape = gridsize, loc = (0, 0))
+ax2 = plt.subplot2grid(shape = gridsize, loc = (0, 1))
+
+ax1.set_title(label = 'Histogram of polarity scores for football commentary')
+ax1.hist(x = data_reduce['text_polarity'], bins = nbins_polarity, range = [lowerbound_polarity, upperbound_polarity])
+ax1.set_xlabel('Polarity score')
+ax1.set_ylabel('Frequency')
+
+ax2.set_title(label = 'Histogram of subjectivity scores for football commentary')
+ax2.hist(x = data_reduce['text_subjectivity'], bins = nbins_subjectivity, range = [lowerbound_subjectivity, upperbound_subjectivity])
+ax2.set_xlabel('Subjectivity score')
+ax2.set_ylabel('Frequency')
+
 
 # output as Python script for nice version-controlling
 get_ipython().system('jupyter nbconvert --to script --no-prompt notebook.ipynb')
