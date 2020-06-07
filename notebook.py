@@ -13,6 +13,7 @@
 
 import pandas as pd
 from textblob import TextBlob
+import matplotlib.pyplot as plt
 
 # display multiple outputs in same cell
 from IPython.core.interactiveshell import InteractiveShell
@@ -108,6 +109,32 @@ data_reduce['text_sentiment'] = data_reduce['text'].apply(lambda text: TextBlob(
 data_reduce.head(10)
 
 
+# Let's visualise our outputs.
+
+data_reduce.info()
+
+
+# can do following but less performant
+data_reduce['text_polarity'] = data_reduce['text'].apply(lambda text: TextBlob(text).sentiment.polarity)
+data_reduce['text_subjectivity'] = data_reduce['text'].apply(lambda text: TextBlob(text).sentiment.subjectivity)
+
+data_reduce.head(6)
+
+
+# ## Explore the results
+
+polarity_lowerbound = -1
+polarity_upperbound = 1
+# want bins every 0.1
+num_bins = (polarity_upperbound - polarity_lowerbound)/0.1
+num_bins = int(num_bins)
+
+plt.hist(data_reduce['text_polarity'], bins = num_bins, range = [polarity_lowerbound, polarity_upperbound])
+plt.xlabel('Polarity score')
+plt.ylabel('Frequency')
+plt.title('Histogram of polarity scores for football commentary')
+
+
 # Before proceeding further, let's just manually inspect the entries attached to the first two rows, Southamptom vs. Swansea to see if the function is performing well.
 
 # From Southampton's perspective, the language itself is very factual and lacks emotional oomph. This demonstrates that the low **subjectivity** score is working well. On the **polarity** aspect, the general reading of the commentary is that Southampton had a number of chances and made few fouls, though they did record a red card. However, the reading of their commentary is quite positive thus the function may not be working very well.
@@ -123,7 +150,7 @@ data_reduce.loc[1,'text']
 # We can investigate (1.) further by looking at the sentiment attached to each line of commentary then filter out the weak ones in order to reduce the noise this is causing on the overall sentiment.
 
 # output as Python script for nice version-controlling
-get_ipython().system('jupyter nbconvert --to html notebook.ipynb')
+get_ipython().system('jupyter nbconvert --to script --no-prompt notebook.ipynb')
 
 
 
