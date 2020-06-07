@@ -122,17 +122,39 @@ data_reduce.head(6)
 
 
 # ## Explore the results
+# 
+# ### Polarity scores
+# Plotting a histogram of the polarity scores returned by the function, we find that all of the scores are positive and below 0.50. This means that the language function is scoring all the sentiment as weakly positive. In other words, looking at all commentary associated with each side in a match, the sentiment is positive. 
+# 
+# This contradicts with our assumption that matches each return a side with positive sentiment and the other side with negative sentiment. 
 
-polarity_lowerbound = -1
-polarity_upperbound = 1
+lowerbound = -1
+upperbound = 1
 # want bins every 0.1
-num_bins = (polarity_upperbound - polarity_lowerbound)/0.1
+num_bins = (upperbound - lowerbound)/0.1
 num_bins = int(num_bins)
 
-plt.hist(data_reduce['text_polarity'], bins = num_bins, range = [polarity_lowerbound, polarity_upperbound])
+plt.hist(data_reduce['text_polarity'], bins = num_bins, range = [lowerbound, upperbound])
 plt.xlabel('Polarity score')
 plt.ylabel('Frequency')
 plt.title('Histogram of polarity scores for football commentary')
+
+
+# ### Subjectivity
+# Plotting a histogram of the subjectvity scores returned by the function, we find that most of the scores are below 0.50. This means that the language function is scoring most of the sentiment as being objective. In other words, looking at all commentary associated with each side in a match, the sentiment is positive. 
+# 
+# This contradicts with our assumption that matches each return a side with positive sentiment and the other side with negative sentiment. 
+
+lowerbound = 0
+upperbound = 1
+# want bins every 0.1
+num_bins = (upperbound - lowerbound)/0.1
+num_bins = int(num_bins)
+
+plt.hist(data_reduce['text_subjectivity'], bins = num_bins, range = [lowerbound, upperbound])
+plt.xlabel('Subjectivity score')
+plt.ylabel('Frequency')
+plt.title('Histogram of subjectivity scores for football commentary')
 
 
 # Before proceeding further, let's just manually inspect the entries attached to the first two rows, Southamptom vs. Swansea to see if the function is performing well.
