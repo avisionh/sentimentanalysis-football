@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # multiclass-classification
 # win, loss or draw
@@ -22,8 +23,7 @@ df = pd.read_csv(filepath_or_buffer='data/events.csv')
 # aggregate data
 dict_aggregate = {'text': ' '.join, 'is_goal': 'sum'}
 df_commentary = df.groupby(by=['id_odsp', 'event_team', 'opponent'],
-                           as_index=False)\
-    .agg(dict_aggregate)
+                           as_index=False).agg(dict_aggregate)
 
 # pivot x window
 ## get two extra columns
@@ -33,20 +33,49 @@ COLUMNS_KEEP = ['id_odsp', 'event_team', 'is_goal', 'text', 'row_number']
 
 # window function to partition on `id_odsp` and order by `event_team`, return `row_number`
 df_commentary['row_number'] = df_commentary.sort_values(['event_team'],
-                                                         ascending=True)\
-    .groupby(['id_odsp'])\
-    .cumcount() + 1
+                                                         ascending=True).groupby(['id_odsp']).cumcount() + 1
 
 # filter for event and opposition teams, with row_number being 1 and 2 respectively
 df_event = df_commentary[COLUMNS_KEEP].query('row_number == 1')
 df_opponent = df_commentary[COLUMNS_KEEP].query('row_number == 2')
 
 # rename columns to avoid clashes when joining
-df_event = df_event.rename(columns={'is_goal': 'home_goals',
-                                    'text': 'home_text'})
+df_event = df_event.rename(columns={'is_goal': 'event_goals',
+                                    'text': 'event_text'})
 df_opponent = df_opponent.rename(columns={'event_team': 'opponent_team',
                                           'is_goal': 'opponent_goals',
                                           'text': 'opponent_text'})
 
 # join them
 df_commentary = df_event.merge(right=df_opponent, on='id_odsp')
+
+# create `label` column which we will use for text classification
+CONDITIONS = [
+    df_commentary['event_goals'] > df_commentary['opponent_goals'],
+    df_commentary['event_goals'] == df_commentary['opponent_goals'],
+    df_commentary['event_goals'] < df_commentary['opponent_goals']
+]
+CHOICES = ['event_win', 'draw', 'opponent_win']
+df_commentary['label'] = np.select(CONDITIONS, CHOICES, default=np.NaN)
+
+# unpivot to get format suitable for analysis
+df_team = pd.melt(frame=df_commentary,
+                  id_vars=['id_odsp'],
+                  value_vars=['event_team', 'opponent_team'],
+                  var_name='label_team',
+                  value_name='team')
+df_text = pd.melt(frame=df_commentary,
+                  id_vars=['id_odsp'],
+                  value_vars=['event_text', 'opponent_text'],
+                  var_name='label_text',
+                  value_name='text')
+## extract first few characters so have extra column to join on
+## thereby avoid duplicate rows being created when joining
+df_team['identify_side'] = df_team['label_team'].str.slice(start=0, stop=6)
+df_text['identify_side'] = df_text['label_text'].str.slice(start=0, stop=6)
+
+df_unpivot = df_team.merge(right=df_text, on=['id_odsp', 'identify_side'])
+df_unpivot = df_unpivot.merge(right=df_commentary[['id_odsp', 'label']], on='id_odsp')
+
+del df_event, df_opponent, df_team, df_text, df_commentary, dict_aggregate, COLUMNS_KEEP, CONDITIONS, CHOICES
+
