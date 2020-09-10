@@ -77,5 +77,7 @@ df_text['identify_side'] = df_text['label_text'].str.slice(start=0, stop=6)
 df_unpivot = df_team.merge(right=df_text, on=['id_odsp', 'identify_side'])
 df_unpivot = df_unpivot.merge(right=df_commentary[['id_odsp', 'label']], on='id_odsp')
 
-del df_event, df_opponent, df_team, df_text, df_commentary, dict_aggregate, COLUMNS_KEEP, CONDITIONS, CHOICES
+# export data for further analysis
+df_unpivot.drop(columns=['identify_side', 'label_text']).to_csv(path_or_buf='data/df.csv', index=False)
 
+del df_event, df_opponent, df_team, df_text, df_commentary, dict_aggregate, COLUMNS_KEEP, CONDITIONS, CHOICES
