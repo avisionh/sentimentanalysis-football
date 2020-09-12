@@ -79,4 +79,18 @@ df_text['identify_side'] = df_text['label_text'].str.split(pat='_', expand=True)
 df_unpivot = df_team.merge(right=df_text, on=['id_odsp', 'identify_side'])
 df_unpivot = df_unpivot.merge(right=df_commentary[['id_odsp', 'label']], on='id_odsp')
 
+# replace explicit mention of team names with 'event_team' or 'opponent_team',
+# this is so when we train a model, it picks up the feature of the team with the event
+# so it can more accurately infer which team wins
+# create function then apply it
+
+df_unpivot['text'] = df_unpivot.apply(lambda row: re.sub(pattern=r'\([^)]*\)',
+                                                         repl='(' + row['identify_side'] + ')',
+                                                         string=row['text']),
+                                      axis=1)
+
+# export data for further analysis
+df_unpivot.drop(columns=['identify_side', 'label_text'],
+                axis=1).to_csv(path_or_buf='data/df.csv', index=False)
+
 del df_event, df_opponent, df_team, df_text, df_commentary, dict_aggregate, COLUMNS_KEEP, CONDITIONS, CHOICES
