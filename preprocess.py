@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 
 # multiclass-classification
 # win, loss or draw
@@ -69,15 +70,13 @@ df_text = pd.melt(frame=df_commentary,
                   value_vars=['event_text', 'opponent_text'],
                   var_name='label_text',
                   value_name='text')
-## extract first few characters so have extra column to join on
-## thereby avoid duplicate rows being created when joining
-df_team['identify_side'] = df_team['label_team'].str.slice(start=0, stop=6)
-df_text['identify_side'] = df_text['label_text'].str.slice(start=0, stop=6)
+
+# extract string before '_'
+# thereby avoid duplicate rows being created when joining
+df_team['identify_side'] = df_team['label_team'].str.split(pat='_', expand=True)[0]
+df_text['identify_side'] = df_text['label_text'].str.split(pat='_', expand=True)[0]
 
 df_unpivot = df_team.merge(right=df_text, on=['id_odsp', 'identify_side'])
 df_unpivot = df_unpivot.merge(right=df_commentary[['id_odsp', 'label']], on='id_odsp')
-
-# export data for further analysis
-df_unpivot.drop(columns=['identify_side', 'label_text']).to_csv(path_or_buf='data/df.csv', index=False)
 
 del df_event, df_opponent, df_team, df_text, df_commentary, dict_aggregate, COLUMNS_KEEP, CONDITIONS, CHOICES
